@@ -37,7 +37,7 @@ enum MessageType
 //_______________________________________________________
 
 //_______________________________________________________
-// Note that, although enumerations are beinf used, the
+// Note that, although enumerations are being used, the
 // opcodes are sent as the first parameter in the
 // message text. For wxample, message payload text of
 // "1 42" would imply setting of the radio IF gain of
