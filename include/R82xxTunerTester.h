@@ -43,17 +43,11 @@ enum MessageType
 // "1 42" would imply setting of the radio IF gain of
 // 42dB. The C++ source code should make this clear.
 //_______________________________________________________
-enum RadioServerOpcode
+enum ServerOpcodes
 {
   // Textual parameters: ifgain:Integer.
-  SendRadioCommand = 1;
+  SendRadioCommand = 1,
 
-  // Textual parameters: None.
-  Terminate
-};
-
-enum SpectrumServerOpcode
-{
   // Textual parameters: tag:Integer, filepath:c_string.
   ExecuteApplicationProgram = 1,
 
@@ -64,4 +58,4 @@ enum SpectrumServerOpcode
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
-#endif __R82XXTUNERTESTER__
+#endif // __R82XXTUNERTESTER__
