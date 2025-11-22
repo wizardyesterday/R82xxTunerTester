@@ -48,9 +48,8 @@ IpcMessageQueue::IpcMessageQueue(char *fileNamePtr,
   // Save for later.
   this->removeQueueInDestructor = removeQueueInDestructor;
 
-  //  Defaault to failure result.
-  *successPtr = false;
- 
+  //  Defaault to successful result.
+  *successPtr = true;; 
 
   // Generate unique key;
    key = ftok(fileNamePtr,projectId);
@@ -58,6 +57,9 @@ IpcMessageQueue::IpcMessageQueue(char *fileNamePtr,
   if (key == -1)
   {
     fprintf(stderr,"ERROR: ftok()\n");
+
+    // Indicate failure.
+    *successPtr = false;
   } // if
 
   if (*successPtr)
@@ -68,10 +70,10 @@ IpcMessageQueue::IpcMessageQueue(char *fileNamePtr,
     if (queueIdentifier == -1)
     {
       fprintf(stderr,"ERROR: msgget()\n");
-    } // if
 
-    // The operation worked!
-    *successPtr = true;
+      // Indicate failure.
+      *successPtr = false;
+    } // if
   } // if
 
 } // IpcMessageQueue
@@ -208,7 +210,7 @@ bool IpcMessageQueue::receiveData(
   if (*bufferLengthPtr != 0)
   {
     // Copy the message data to the supplied storage.
-    memcpy(sendBuffer.mtext,bufferPtr,*bufferLengthPtr);
+    memcpy(bufferPtr,receiveBuffer.mtext,*bufferLengthPtr);
 
     // We succeeded!
     success = true;

@@ -1,68 +1,55 @@
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
 
-struct messageBuffer
-{
-  long mtype;
-  char mtext[128];
-};
+#include "IpcMessageQueue.h"
 
 int main(int argc,char **argv)
 {
-  key_t key;
-  int mqid;
-  messageBuffer sendBuffer;
-  messageBuffer receiveBuffer;
+  bool success;
   size_t bufferLength;
-  int sendLength;
+  size_t sendLength;
+  char buffer[1024];
   char *messagePtr = "Client request\n";
+  IpcMessageQueue *queuePtr;
 
-  // Generate unique key;
-  key = ftok("/home/chris/R82xxKeyFile",1); 
+  // Instantiate an IPC message queue object.
+  queuePtr = new IpcMessageQueue("/home/chris/R82xxKeyFile",1,true,&success);
 
-  if (key == -1)
+  if (!success)
   {
-    fprintf(stderr,"ERROR: ftok()\n");
+    // Release resources.
+    delete queuePtr;
+
+    // Exit program.
     return (-1);
   } // if
 
-  // Create a message queue or use one if it already exists.
-  mqid = msgget(key,IPC_CREAT | 0666);
+  // Account for the string terminator.
+  sendLength = strlen(messagePtr) + 1; 
 
-  if (mqid == -1)
+  // Send the message.
+  success = queuePtr->sendData(1,messagePtr,sendLength);
+
+  if (!success)
   {
-    fprintf(stderr,"ERROR: msgget()\n");
+    // Release resources.
+    delete queuePtr;
+
+    // Exit program.
     return (-2);
   } // if
 
-  // Set up a message.
-  sendBuffer.mtype = 1;
-  strcpy(sendBuffer.mtext,messagePtr);
-
-  // Account for the string terminator.
-  sendLength = strlen(sendBuffer.mtext) + 1; 
-
-  // Send the message.
-  msgsnd(mqid,&sendBuffer,sendLength,0);
-
-  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-  // This block of code waits for a response message.
-  // It can be  used to throttle the client requests.
-  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-
   // Wait for response.
-  bufferLength = msgrcv(mqid,&receiveBuffer,100,2,0);
+  success = queuePtr->receiveData(2,buffer,&bufferLength);
 
+  if (success)
+  {
   printf("bufferLength: %d\n",bufferLength);
-  printf("message type: %d\n",receiveBuffer.mtype);
-  printf("message text: %s",receiveBuffer.mtext);
-  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+  printf("message text: %s",buffer);
+  } // if
 
-  // Destroy the queue since we don't want it lingering.
-  msgctl(mqid,IPC_RMID,NULL);
+  // Release resources.
+  delete queuePtr;
 
   return (0);
 
