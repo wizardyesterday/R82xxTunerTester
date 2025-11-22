@@ -29,8 +29,8 @@ class IpcMessageQueue
 
   ~IpcMessageQueue(void);
 
-  bool sendData(void *bufferPtr,int bufferLength,long messageType);
-  ssize_t receiveData(void *bufferPtr,int bufferLength);
+  bool sendData(long messageType,void *bufferPtr,size_t bufferLength);
+  bool receiveData(long messageType,void *bufferPtr,size_t *bufferLengthPtr);
 
   private:
 

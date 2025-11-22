@@ -29,8 +29,8 @@
     not the message queue is removed in the destructor of the
     IpcMessageQueue object.
 
-    *successPtrPtr - A flag that indicates whether or not the system
-    was initialized. A value of true indicates that the systeem was
+    *successPtrPtr - A pointer to flag that indicates whether or not the
+    system was initialized. A value of true indicates that the systeem was
     initialized, and a value of false indicates that a failure occurred
     during initialization.
 
@@ -108,17 +108,19 @@ IpcMessageQueue::~IpcMessageQueue(void)
 
 } // ~IpcMessageQueue
 
-#if 0
 /**************************************************************************
 
   Name: sendData
 
-  Purpose: The purpose of this function is to send a buffer of data over
-  a TCP connection.
+  Purpose: The purpose of this function is to send a buffer of data to
+  another process via a message queue.
 
-  Calling Sequence: octetsSent = sendData(bufferPtr,bufferLength)
+  Calling Sequence: success = sendData(messageType,bufferPtr,bufferLength)
 
   Inputs:
+
+    messageType - The type of message that is used for multiplexing of
+    messages on the message queue.
 
     bufferPtr - A pointer to the octets to send.
 
@@ -126,44 +128,37 @@ IpcMessageQueue::~IpcMessageQueue(void)
 
   Outputs:
 
-    octetsSent - The number of octets sent over the TCP connection.
+    success - A flag that indicates whether or not the operation was
+    successful. A value of true indicates that the operation was
+    successful, and a value of false indicates that a failure occurred.
+
 
 **************************************************************************/
-ssize_t IpcMessageQueue::sendData(void *bufferPtr,int bufferLength)
+bool IpcMessageQueue::sendData(
+  long messageType,
+  void *bufferPtr,
+  size_t bufferLength)
 {
-  ssize_t octetsSent;
-  ssize_t octetsWritten;
-  ssize_t octetsRemaining;
-  unsigned char *octetPtr;
+  bool success;
+  int result;
 
-  // Default to nothing sent.
-  octetsSent = 0;
+  // Default to failure.
+  success = false;
+  // Set up a message.
+  sendBuffer.mtype =messageType;
+  memcpy(sendBuffer.mtext,bufferPtr,bufferLength);
 
-  if (connectionIsEstablished())
+  // Send the message.
+  result = msgsnd(queueIdentifier,&sendBuffer,bufferLength,0);
+
+  if (result == 0)
   {
-    // Reference the buffer in the octet context.
-    octetPtr = (unsigned char *)bufferPtr;
-
-    // Indicate that the whole buffer needs to be sent.
-    octetsRemaining = bufferLength;
-
-    while (octetsRemaining > 0)
-    {
-      // Send the octets over the TCP connection.
-      octetsWritten = send(socketDescriptor,octetPtr,octetsRemaining,0);
-
-      // We havw this much less to send over the network connection.
-      octetsRemaining -= octetsWritten;
-
-      // Advance buffer pointer.
-      octetPtr += octetsWritten;
-
-      // Update to account for the number of octets written.
-      octetsSent += octetsWritten;
-    } // while
+    // The message was succwssfully queued.
+    success = true;
   } // if
 
-  return (octetsSent);
+
+  return (success);
 
 } // sendData
 
@@ -172,84 +167,53 @@ ssize_t IpcMessageQueue::sendData(void *bufferPtr,int bufferLength)
   Name: receiveData
 
   Purpose: The purpose of this function is to receive incoming data
-  over a TCP connection.
+  sent from another process via message queues.
 
-  Calling Sequence: octetsReceived = receiveData(bufferPtr,bufferLength)
+  Calling Sequence: success = receiveData(messageType,bufferPtr,bufferLengthPtr)
 
   Inputs:
 
-    bufferPtr - A pointer to the octets to send.
+    messageType - The type of message that is used for multiplexing of
+    messages on the message queue.
 
-    bufferLength - The number of size of the receive buffer, referenced.
+    bufferPtr - A pointer to storage to accept received data.
+
+    bufferLengthPtr - A pointer to storage that indicates how many
+    message bytes were received.
 
   Outputs:
 
-    octetsReceived - The number ogf octects recieved over the connection.
-
+    success - A flag that indicates whether or not the operation was
+    successful. A value of true indicates that the operation was
+    successful, and a value of false indicates that a failure occurred.
 
 **************************************************************************/
-ssize_t  IpcMessageQueue::receiveData(void *bufferPtr,int bufferLength)
+bool IpcMessageQueue::receiveData(
+  long messageType,
+  void *bufferPtr,
+  size_t *bufferLengthPtr)
 {
-  ssize_t octetsReceived;
-  ssize_t octetsRead;
-  bool done;
-  unsigned char *octetPtr;
-  struct timeval timeout;
-  fd_set readFds;
+  bool success;
 
-  // Default to nothing received.
-  octetsReceived = 0;
+  // Default ro failure.
+  success = false;
 
-  if (connectionIsEstablished())
+  // Wait for response.
+  *bufferLengthPtr = msgrcv(queueIdentifier,
+                            &receiveBuffer,
+                            sizeof(receiveBuffer.mtext),
+                            messageType,
+                            0);
+
+  if (*bufferLengthPtr != 0)
   {
-    // Reference the buffer in the octet context.
-    octetPtr = (unsigned char *)bufferPtr;
+    // Copy the message data to the supplied storage.
+    memcpy(sendBuffer.mtext,bufferPtr,*bufferLengthPtr);
 
-    // Set up for loop entry.
-    done = false;
-
-    while (!done)
-    {
-      //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-      // This block of code is necessary when working with TCP.
-      //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-      // Clear before use.
-      FD_ZERO(&readFds);
-
-      FD_SET(socketDescriptor,&readFds);
-
-      // set up timeout value to 200 milliseconds.
-      timeout.tv_sec = 0;
-      timeout.tv_usec = 200000;
-
-      // wait and be nice to the system
-      select(socketDescriptor+1,&readFds,0,0,&timeout);
-      //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-
-      if(FD_ISSET(socketDescriptor,&readFds))
-      {
-        // Read what's available.
-        octetsRead = recv(socketDescriptor,
-                               octetPtr,
-                               bufferLength,
-                               0);
-
-        // Advance to the next storage location.
-        octetPtr += octetsRead;
-
-        // Account for new received data.
-        octetsReceived += octetsRead;
-      } // if
-      else
-      {
-        // All data has been received, so bail out.
-        done = true;
-      } // else
-    } // while
+    // We succeeded!
+    success = true;
   } // if
 
-  return (octetsReceived);
+  return (success);
 
 } // receiveData
-
-#endif
