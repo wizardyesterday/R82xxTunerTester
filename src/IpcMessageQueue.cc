@@ -3,7 +3,6 @@
 //**********************************************************************
 
 #include <stdio.h>
-#include <time.h>
 #include "IpcMessageQueue.h"
 
 /**************************************************************************
@@ -11,19 +10,24 @@
   Name: IpcMessageQueue
 
   Purpose: The purpose of this function is to serve as the constructor
-  of a IpcMessageQueue object.  This function opens a socket, and if
-  successful, populates the peer address structure with the appropriate
-  information.
+  of a IpcMessageQueue object.
 
-  Calling Sequence: IpcMessageQueue(ipAddressPtr,port,*successPtrPtr)
+  Calling Sequence: IpcMessageQueue(fileNamePtr,projectId,
+                                    removeQueueInDestructor,
+                                    successPtr)
 
   Inputs:
 
-    ipAddressPtr - A pointer to a character string that represents the
-    IP address of the link partner.  The format is in dotted decimal
-    notation.
+    fileNamePtr - The name of the file that is used for message key
+    generation.
 
-    port - The port number for the link partner listener.
+    projectId - An integer that also used for message key generation.
+    Only the lowest eight bits are used, and it is common to set this
+    parameter to a character value such as the letter 'A'.
+
+    removequeueInDestructor - This is a flag that indicates whether or
+    not the message queue is removed in the destructor of the
+    IpcMessageQueue object.
 
     *successPtrPtr - A flag that indicates whether or not the system
     was initialized. A value of true indicates that the systeem was
@@ -35,56 +39,41 @@
     None.
 
 **************************************************************************/
-IpcMessageQueue::IpcMessageQueue(char *ipAddressPtr,int port,bool *successPtr)
+IpcMessageQueue::IpcMessageQueue(char *fileNamePtr,
+    int projectId,
+    bool removeQueueInDestructor,
+    bool *successPtr)
 {
-  int result;
-  struct sockaddr_in peerAddress;
+
+  // Save for later.
+  this->removeQueueInDestructor = removeQueueInDestructor;
 
   //  Defaault to failure result.
   *successPtr = false;
  
-  // Indicate not connected.
-  connected = false;
 
-  // 1. Create socket.
-  socketDescriptor = socket(AF_INET,SOCK_STREAM,0);
+  // Generate unique key;
+   key = ftok(fileNamePtr,projectId);
 
-  if (socketDescriptor  > 0)
+  if (key == -1)
   {
+    fprintf(stderr,"ERROR: ftok()\n");
+  } // if
+
+  if (*successPtr)
+  {
+    // Create a message queue or use one if it already exists.
+    queueIdentifier = msgget(key,IPC_CREAT | 0666);
+
+    if (queueIdentifier == -1)
+    {
+      fprintf(stderr,"ERROR: msgget()\n");
+    } // if
+
+    // The operation worked!
     *successPtr = true;
   } // if
-  else
-  {
-    fprintf(stderr,"ERROR, socket()\n");
-  } // else
 
-  if (*successPtr == true)
-  {
-    // Configure server address.
-    peerAddress.sin_family = AF_INET;
-    peerAddress.sin_port = htons(port);
-    inet_pton(AF_INET,ipAddressPtr,&peerAddress.sin_addr);
-  } // if
-
-  if (*successPtr == true)
-  {
-    // Connect to server.
-    result = connect(socketDescriptor,
-                     (struct sockaddr *)&peerAddress,
-                      sizeof(peerAddress));
-
-    if (result < 0)
-    {
-      fprintf(stderr,"ERROR: connect()\n");
-      *successPtr = false;
-    } // if
-    else
-    {
-      // Indicat that a connection is established.
-      connected = true;
-    } // else
-  } // if
- 
 } // IpcMessageQueue
 
 /**************************************************************************
@@ -108,42 +97,18 @@ IpcMessageQueue::IpcMessageQueue(char *ipAddressPtr,int port,bool *successPtr)
 IpcMessageQueue::~IpcMessageQueue(void)
 {
 
-  if (socketDescriptor > 0)
+  if (removeQueueInDestructor)
   {
-    // Close the connection.
-    close(socketDescriptor);
+    if (queueIdentifier != -1)
+    {
+      // Destroy the queue since we don't want it lingering.
+      msgctl(queueIdentifier,IPC_RMID,NULL);
+    } // if
   } // if
 
 } // ~IpcMessageQueue
 
-/**************************************************************************
-
-  Name: connectionIsEstablished
-
-  Purpose: The purpose of this function is to serve as the destructor
-  of a IpcMessageQueue object.
-
-  Calling Sequence: status = connectionIsEstablished()
-
-  Inputs:
-
-    None.
-
-  Outputs:
-
-    status - A boolean that indicates whether or not a connection is
-    established.  A value of true indicates that a connect has been
-    established, and a value of false indicates that a connection has
-    not been established.
-
-**************************************************************************/
-bool IpcMessageQueue::connectionIsEstablished(void)
-{
-
-  return (connected);
- 
-} // connectionIsEstablished
-
+#if 0
 /**************************************************************************
 
   Name: sendData
@@ -287,3 +252,4 @@ ssize_t  IpcMessageQueue::receiveData(void *bufferPtr,int bufferLength)
 
 } // receiveData
 
+#endif
