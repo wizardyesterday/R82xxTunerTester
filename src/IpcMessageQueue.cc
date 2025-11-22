@@ -146,8 +146,9 @@ bool IpcMessageQueue::sendData(
 
   // Default to failure.
   success = false;
+
   // Set up a message.
-  sendBuffer.mtype =messageType;
+  sendBuffer.mtype = messageType;
   memcpy(sendBuffer.mtext,bufferPtr,bufferLength);
 
   // Send the message.
@@ -158,7 +159,6 @@ bool IpcMessageQueue::sendData(
     // The message was succwssfully queued.
     success = true;
   } // if
-
 
   return (success);
 
