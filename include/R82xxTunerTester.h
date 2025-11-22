@@ -48,22 +48,22 @@ enum MessageType
 // server to terminate execution.
 // The C++ source code should make this clearer.
 // Thus, we have a two-lwvwl hierarchy of a server
-// command: MessageType:Opcode. The message type is
+// command: MessageType:Command. The message type is
 // like a routing code to a particular server, and the
-// opcode tells what the server is to do.
+// command tells what the server is to do.
 // This will become clearer upon examination of the
 // opcode decoder in the source code.
 //_______________________________________________________
-enum ServerOpcodes
+enum ServerCommands
 {
   // Textual parameters: None.
-  Terminate,
+  CmdTerminate,
 
   // Textual parameters: ifgain:Integer.
-  RadioServerSetIfGain,
+  RadioServerCmdSetIfGain,
 
   // Textual parameters: tag:Integer, filepath:c_string.
-  SpectrumServerComputePower
+  SpectrumServerCmdComputePower
 };
 //_______________________________________________________
 
