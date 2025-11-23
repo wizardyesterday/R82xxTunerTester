@@ -125,25 +125,22 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
 int main(int argc,char **argv)
 {
   // Miscellaneous support.
+  bool success;
   bool done;
   bool exitProgram;
   struct MyParameters parameters;
   char *chPtr;
 
   // Message queue support.
-  key_t key;
-  int mqid;
-  messageBuffer sendBuffer;
-  messageBuffer receiveBuffer;
   size_t bufferLength;
   int sendLength;
 
   // Tcp client support.
-  bool success;
-  uint32_t count;
   int octetCount;
+  char *networkBufferPtr;
   char inputBuffer[16384];
   char networkInputBuffer[16384];
+  char networkOutputBuffer[16384];
   int serverPort;
   char serverIpAddress[32];
   TcpClient *networkInterfacePtr;
@@ -173,57 +170,65 @@ int main(int argc,char **argv)
   } // if
 
   // Display diags welcome messate.
-  octetCount = networkInterfacePtr->receiveData(networkInputBuffer,16000);
+  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
 
   // Terminate the returned string, and print it.
-  networkInputBuffer[octetCount] = 0;
-  printf("%s",networkInputBuffer);
+  networkOutputBuffer[octetCount] = 0;
+  printf("%s",networkOutputBuffer);
 
-#if 0
-  // Generate unique key;
-  key = ftok("/home/chris/R82xxKeyFile",1); 
+  networkBufferPtr = "enable iqdump\n";
+  octetCount = strlen(networkBufferPtr);
+  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
+  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
+  networkOutputBuffer[octetCount] = 0;
+  printf("%s",networkOutputBuffer);
 
-  if (key == -1)
-  {
-    fprintf(stderr,"ERROR: ftok()\n");
-    return (-1);
-  } // if
+  networkBufferPtr = "set demodmode 0\n";
+  octetCount = strlen(networkBufferPtr);
+  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
+  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
+  networkOutputBuffer[octetCount] = 0;
+  printf("%s",networkOutputBuffer);
 
-  // Create a message queue or use one if it already exists.
-  mqid = msgget(key,IPC_CREAT | 0666);
+  networkBufferPtr = "set agclevel -8\n";
+  octetCount = strlen(networkBufferPtr);
+  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
+  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
+  printf("%s",networkOutputBuffer);
 
-  if (mqid == -1)
-  {
-    fprintf(stderr,"ERROR: msgget()\n");
-    return (-2);
-  } // if
+  networkBufferPtr = "set rxifgain 0\n";
+  octetCount = strlen(networkBufferPtr);
+  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
+  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
+  printf("%s",networkOutputBuffer);
 
-  // Wait for request message.
-  bufferLength = msgrcv(mqid,&receiveBuffer,100,1,0);
+  networkBufferPtr = "set rxgain 50\n";
+  octetCount = strlen(networkBufferPtr);
+  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
+  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
+  printf("%s",networkOutputBuffer);
 
-  printf("bufferLength: %d\n",bufferLength);
-  printf("message type: %d\n",receiveBuffer.mtype);
-  printf("message text: %s",receiveBuffer.mtext);
+  networkBufferPtr = "start receiver\n";
+  octetCount = strlen(networkBufferPtr);
+  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
+  usleep(5000000);
+  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
+  printf("%s",networkOutputBuffer);
 
-  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-  // This block of code sets up and sends a response.
-  // It can be  used to throttle the client requests.
-  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-  // Set up the response
-  sendBuffer.mtype = 2;
-  strcpy(sendBuffer.mtext,messagePtr);
+  networkBufferPtr = "start ringoscillator 8 48 0\n";
+  octetCount = strlen(networkBufferPtr);
+  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
+  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
+  printf("%s",networkOutputBuffer);
 
-  // Account for the string terminator.
-  sendLength = strlen(sendBuffer.mtext) + 1;
-
-  // Send the response.
-  msgsnd(mqid,&sendBuffer,strlen(messagePtr),0);
-  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-
-#endif
+  networkBufferPtr = "set rxfrequency 57600000\n";
+  octetCount = strlen(networkBufferPtr);
+  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
+  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
+  printf("%s",networkOutputBuffer);
 
   // Release resources.
-   delete networkInterfacePtr;
+  delete networkInterfacePtr;
 
   return (0);
 
