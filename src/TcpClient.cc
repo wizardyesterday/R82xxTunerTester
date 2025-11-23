@@ -261,7 +261,7 @@ ssize_t  TcpClient::receiveData(void *bufferPtr,int bufferLength)
       select(socketDescriptor+1,&readFds,0,0,&timeout);
       //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
-      if(FD_ISSET(socketDescriptor,&readFds))
+      if (FD_ISSET(socketDescriptor,&readFds))
       {
         // Read what's available.
         octetsRead = recv(socketDescriptor,
