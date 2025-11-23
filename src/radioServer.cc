@@ -5,18 +5,12 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
-#include "TcpClient.h"
 #include "R82xxTunerTester.h"
+#include "TcpClient.h"
+#include "IpcMessageQueue.h"
 
 #define DEFAULT_SERVER_IP_ADDRESS "192.93.16.87"
 #define DEFAULT_SERVER_PORT (8001)
-
-// This structure represents an entry in a message queue.
-struct messageBuffer
-{
-  long mtype;
-  char mtext[1024];
-};
 
 // This structure is used to consolidate user parameters.
 struct MyParameters
@@ -138,6 +132,7 @@ int main(int argc,char **argv)
   char *chPtr;
 
   // Message queue support.
+  IpcMessageQueue *queuePtr;
   size_t bufferLength;
   int sendLength;
 
@@ -188,8 +183,33 @@ int main(int argc,char **argv)
   sendRadioCommand("start ringoscillator 8 48 0\n",0);
   sendRadioCommand("set rxfrequency 57600000\n",0);
 
+#if 0
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+  // Radio is set up for testing, so now message queue sruff
+  // is set up.
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+  // Instantiate an IPC message queue object.
+  queuePtr = new IpcMessageQueue("/home/chris/R82xxKeyFile",
+                                 RadioServerCmd,
+                                 false,
+                                 &success);
+
+  if (!success)
+  {
+    // Release resources.
+    delete queuePtr;
+    delete networkInterfacePtr;
+    
+    // Exit program.
+    return (0);
+  } // if
+
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+#endif
+
   // Release resources.
   delete networkInterfacePtr;
+//  delete queuePtr;
 
   return (0);
 
@@ -227,6 +247,9 @@ static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds)
   char *networkBufferPtr;
   char networkOutputBuffer[16384];
 
+  // Echo the command to the console.
+  printf("%s",commandPtr);
+
   // Convert delay from milliseconds to microseconds.
   delayInMicroseconds = delayInMilliseconds * 1000;
 
@@ -246,6 +269,7 @@ static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds)
   octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
 
   
+  // Terminate the string, and output  the data to the console.
   networkOutputBuffer[octetCount] = 0;
   printf("%s",networkOutputBuffer);
 

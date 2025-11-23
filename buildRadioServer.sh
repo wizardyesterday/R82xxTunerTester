@@ -4,6 +4,7 @@ EXE="radioServer"
 
 CCFILES="\
   src/radioServer.cc \
+  src/IpcMessageQueue.cc \
   src/TcpClient.cc"
 
 g++ -O0 -g -o $EXE -I include $CCFILES
