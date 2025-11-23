@@ -25,6 +25,12 @@ struct MyParameters
   int *serverPortPtr;
 };
 
+// Make this global.
+TcpClient *networkInterfacePtr;
+
+// Static functions.
+static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds);
+
 /*****************************************************************************
 
   Name: getUserArguments
@@ -136,14 +142,10 @@ int main(int argc,char **argv)
   int sendLength;
 
   // Tcp client support.
-  int octetCount;
-  char *networkBufferPtr;
-  char inputBuffer[16384];
-  char networkInputBuffer[16384];
-  char networkOutputBuffer[16384];
   int serverPort;
   char serverIpAddress[32];
-  TcpClient *networkInterfacePtr;
+  int octetCount;
+  char networkOutputBuffer[16384];
   
   // Set up for parameter transmission.
   parameters.serverPortPtr = &serverPort;
@@ -176,56 +178,15 @@ int main(int argc,char **argv)
   networkOutputBuffer[octetCount] = 0;
   printf("%s",networkOutputBuffer);
 
-  networkBufferPtr = "enable iqdump\n";
-  octetCount = strlen(networkBufferPtr);
-  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
-  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
-  networkOutputBuffer[octetCount] = 0;
-  printf("%s",networkOutputBuffer);
-
-  networkBufferPtr = "set demodmode 0\n";
-  octetCount = strlen(networkBufferPtr);
-  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
-  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
-  networkOutputBuffer[octetCount] = 0;
-  printf("%s",networkOutputBuffer);
-
-  networkBufferPtr = "set agclevel -8\n";
-  octetCount = strlen(networkBufferPtr);
-  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
-  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
-  printf("%s",networkOutputBuffer);
-
-  networkBufferPtr = "set rxifgain 0\n";
-  octetCount = strlen(networkBufferPtr);
-  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
-  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
-  printf("%s",networkOutputBuffer);
-
-  networkBufferPtr = "set rxgain 50\n";
-  octetCount = strlen(networkBufferPtr);
-  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
-  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
-  printf("%s",networkOutputBuffer);
-
-  networkBufferPtr = "start receiver\n";
-  octetCount = strlen(networkBufferPtr);
-  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
-  usleep(5000000);
-  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
-  printf("%s",networkOutputBuffer);
-
-  networkBufferPtr = "start ringoscillator 8 48 0\n";
-  octetCount = strlen(networkBufferPtr);
-  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
-  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
-  printf("%s",networkOutputBuffer);
-
-  networkBufferPtr = "set rxfrequency 57600000\n";
-  octetCount = strlen(networkBufferPtr);
-  octetCount = networkInterfacePtr->sendData(networkBufferPtr,octetCount);
-  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
-  printf("%s",networkOutputBuffer);
+  // Set up radio.
+  sendRadioCommand("set demodmode 0\n",0);
+  sendRadioCommand("enable iqdump\n",0);
+  sendRadioCommand("set agclevel -8\n",0);
+  sendRadioCommand("set rxifgain 0\n",0);
+  sendRadioCommand("set rxgain 50\n",0);
+  sendRadioCommand("start receiver\n",3000);
+  sendRadioCommand("start ringoscillator 8 48 0\n",0);
+  sendRadioCommand("set rxfrequency 57600000\n",0);
 
   // Release resources.
   delete networkInterfacePtr;
@@ -233,3 +194,62 @@ int main(int argc,char **argv)
   return (0);
 
 } // main
+
+/**************************************************************************
+
+  Name: sendRadioCommand
+
+  Purpose: The purpose of this function is to send to send a command
+  to the radio diags application that communicates with an rtl-sdr
+  radio.
+
+  Calling Sequence: status = sendRadioCommand(commandPtr,
+                                              delayInMilliseconds)
+ 
+  Inputs:
+
+    commandPtr - A pointer to a command string that is to be sent
+    to the radio.
+
+    delayInMilliseconds - The delay for which to wait before
+    reading a response from the radio as a result of the command
+    sent. A delay value of zero will result in no delay occurring.
+
+  Outputs:
+
+    None.
+
+**************************************************************************/
+static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds)
+{
+  uint32_t delayInMicroseconds;
+  int octetCount;
+  char *networkBufferPtr;
+  char networkOutputBuffer[16384];
+
+  // Convert delay from milliseconds to microseconds.
+  delayInMicroseconds = delayInMilliseconds * 1000;
+
+  // Compute number of octets to send.
+  octetCount = strlen(commandPtr);
+
+  // Send the command to the radio.
+  octetCount = networkInterfacePtr->sendData(commandPtr,octetCount);
+
+  if (delayInMicroseconds > 0)
+  {
+    // Wait until the delay time expires.
+    usleep(delayInMicroseconds);
+  } // if
+
+  // Retrieve radio response.
+  octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
+
+  
+//  networkOutputBuffer[octetCount] = 0;
+  printf("%s",networkOutputBuffer);
+
+
+  return;
+
+} // sendRadioCommand
