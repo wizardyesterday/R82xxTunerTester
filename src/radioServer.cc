@@ -147,11 +147,9 @@ static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds)
   // Retrieve radio response.
   octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
 
-  
   // Terminate the string, and output  the data to the console.
   networkOutputBuffer[octetCount] = 0;
   printf("%s",networkOutputBuffer);
-
 
   return;
 
