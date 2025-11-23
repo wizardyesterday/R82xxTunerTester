@@ -246,7 +246,7 @@ static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds)
   octetCount = networkInterfacePtr->receiveData(networkOutputBuffer,16000);
 
   
-//  networkOutputBuffer[octetCount] = 0;
+  networkOutputBuffer[octetCount] = 0;
   printf("%s",networkOutputBuffer);
 
 
