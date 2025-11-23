@@ -62,7 +62,7 @@ enum ServerCommands
   // Textual parameters: ifgain:Integer.
   RadioServerCmdSetIfGain,
 
-  // Textual parameters: tag:Integer, filepath:c_string.
+  // Textual parameters: tag:Integer,
   SpectrumServerCmdComputePower
 };
 //_______________________________________________________
