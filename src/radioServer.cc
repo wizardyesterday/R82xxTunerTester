@@ -26,7 +26,6 @@ struct MyParameters
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // Global variables.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-bool  exitSystem;
 TcpClient *networkInterfacePtr;
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -214,8 +213,6 @@ static bool decodeMessageQueueCommand(char *bufferPtr)
 
       case CmdTerminate:
       {
-        printf("CmdTerminate\n");
-
         // Indicate that a terminate message was received.
         terminate = true;
 
@@ -224,10 +221,6 @@ static bool decodeMessageQueueCommand(char *bufferPtr)
 
       default:
       {
-        // This was a bogus message,
-        // Indicate that a terminate message was received.
-        terminate = true;
-
         break;
       } // case
 
