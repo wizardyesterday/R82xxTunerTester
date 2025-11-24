@@ -343,25 +343,19 @@ int main(int argc,char **argv)
 
   while (!done)
   {
-    // Give the user the means to bail out.
-    done = keypressed();
-
     // Wait for a commmand.
     success = queuePtr->receiveData(RadioServerTypeCommand,
                                    queueBuffer,
                                    &queueBufferLength);
 
-    // Give the user the means to bail out.
-    done = keypressed();
-
     if (success)
     {
-      // Send and acknowledg with no payload.
+      // Invoke a message decoding function over here.
+
+      // Send an ack with no payload.
       success = queuePtr->sendData(RadioServerTypeAck,
                                    queueBuffer,
                                    0);
-      // Give the user the means to bail out.
-      done = keypressed();
     } // if
 
     if (!success)
