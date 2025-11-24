@@ -267,7 +267,8 @@ int main(int argc,char **argv)
 
   // Message queue support.
   IpcMessageQueue *queuePtr;
-  size_t bufferLength;
+  char queueBuffer[16384];
+  size_t queueBufferLength;
   int sendLength;
 
   // Tcp client support.
@@ -322,10 +323,10 @@ int main(int argc,char **argv)
   // is set up.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Instantiate an IPC message queue object.
-  queuePtr = new IpcMessageQueue("/home/chris/R82xxKeyFile",
-                                 RadioServerCmd,
-                                 true, // Change to false later.
-                                 &success);
+  queuePtr = new IpcMessageQueue(KEYFILE,
+                                  PROJECT_ID,
+                                  false,
+                                  &success);
 
   if (!success)
   {
@@ -336,15 +337,41 @@ int main(int argc,char **argv)
     // Exit program.
     return (0);
   } // if
-  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Set up for loop entry.
   done = false;
 
   while (!done)
   {
+    // Give the user the means to bail out.
     done = keypressed();
+
+    // Wait for a commmand.
+    success = queuePtr->receiveData(RadioServerTypeCommand,
+                                   queueBuffer,
+                                   &queueBufferLength);
+
+    // Give the user the means to bail out.
+    done = keypressed();
+
+    if (success)
+    {
+      // Send and acknowledg with no payload.
+      success = queuePtr->sendData(RadioServerTypeAck,
+                                   queueBuffer,
+                                   0);
+      // Give the user the means to bail out.
+      done = keypressed();
+    } // if
+
+    if (!success)
+    {
+      // Bail out of loop.
+      done = true;
+    } // if
+  
   } // while
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Release resources.
   delete networkInterfacePtr;
