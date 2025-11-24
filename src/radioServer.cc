@@ -31,12 +31,12 @@ TcpClient *networkInterfacePtr;
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // Static functions.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-static bool keypressed(void);
+static bool keyPressed(void);
 static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds);
 
 /**************************************************************************
 
-  Name: keypressed
+  Name: keyPressed
 
   Purpose: The purpose of this function is to determine of any key
   was pressed on the keyboard.
@@ -55,7 +55,7 @@ static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds);
     false indicates that a key was not pressed.
 
 **************************************************************************/
-static bool keypressed(void)
+static bool keyPressed(void)
 {
   bool status;
   int stdinFileDescriptor;
@@ -92,7 +92,7 @@ static bool keypressed(void)
 
   return (status);
 
-} // keypressed
+} // keyPressed
 
 /**************************************************************************
 
