@@ -207,10 +207,14 @@ bool IpcMessageQueue::receiveData(
                             messageType,
                             0);
 
-  if (*bufferLengthPtr != 0)
+  if (*bufferLengthPtr != -1)
   {
-    // Copy the message data to the supplied storage.
-    memcpy(bufferPtr,receiveBuffer.mtext,*bufferLengthPtr);
+    // Zero-length message text is allowed.
+    if (*bufferLengthPtr != 0)
+    {
+      // Copy the message data to the supplied storage.
+      memcpy(bufferPtr,receiveBuffer.mtext,*bufferLengthPtr);
+    } // if
 
     // We succeeded!
     success = true;

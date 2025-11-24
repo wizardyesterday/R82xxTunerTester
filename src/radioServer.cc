@@ -196,7 +196,7 @@ static bool decodeMessageQueueCommand(char *bufferPtr)
     {
       case RadioServerCmdSetIfGain:
       {
-        count = scanf(bufferPtr,"%d %d",&opcode,&ifGain);
+        count = sscanf(bufferPtr,"%d %d",&opcode,&ifGain);
 
         // All parameters have been sent.
         if (count == 2)
