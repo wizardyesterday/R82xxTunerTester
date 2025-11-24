@@ -52,7 +52,7 @@ enum MessageType
 // like a routing code to a particular server, and the
 // command tells what the server is to do.
 // This will become clearer upon examination of the
-// opcode decoder in the source code.
+// command decoder in the source code.
 //_______________________________________________________
 enum ServerCommands
 {
