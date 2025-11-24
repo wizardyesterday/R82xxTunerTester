@@ -33,6 +33,7 @@ TcpClient *networkInterfacePtr;
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 static bool keyPressed(void);
 static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds);
+static void decodeMessageQueueCommand(char *bufferPtr);
 
 /**************************************************************************
 
@@ -154,6 +155,32 @@ static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds)
   return;
 
 } // sendRadioCommand
+
+/**************************************************************************
+
+  Name: decodeMessageQueueCommand
+
+  Purpose: The purpose of this function is to decode and process a
+  message that was removed from the message queue.
+
+  Calling Sequence: status = decodeMessageQueueCommand(bufferPtr)
+ 
+  Inputs:
+
+    bufferPtr - A pointer to a buffer that references the command and
+    its associated parameters.  
+
+  Outputs:
+
+    None.
+
+**************************************************************************/
+static void decodeMessageQueueCommand(char *bufferPtr)
+{
+
+  return;
+
+} // decodeMessageQueueCommand
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // End of static functions.
@@ -351,6 +378,7 @@ int main(int argc,char **argv)
     if (success)
     {
       // Invoke a message decoding function over here.
+     decodeMessageQueueCommand(queueBuffer);
 
       // Send an ack with no payload.
       success = queuePtr->sendData(RadioServerTypeAck,
