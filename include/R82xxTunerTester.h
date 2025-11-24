@@ -32,7 +32,7 @@ enum MessageType
 {
   RadioServerTypeCommand = 1,
   RadioServerTypeAck,
-  SpectrumTypeServerCmd,
+  SpectrumServerTypeCmd,
   SpectrumServerTypeAck
 };
 //_______________________________________________________
