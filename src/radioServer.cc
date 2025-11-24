@@ -183,6 +183,7 @@ static bool decodeMessageQueueCommand(char *bufferPtr)
   int count;
   int opcode;
   int ifGain;
+  char commandBuffer[80];
 
   // Indicate that a terminate message was not received.
   terminate = false;
@@ -200,8 +201,12 @@ static bool decodeMessageQueueCommand(char *bufferPtr)
         // All parameters have been sent.
         if (count == 2)
         {
-          printf("RadioServerCmdSetIfGain\n");
-          printf("s%",bufferPtr);
+          // Construct radio command string.
+          snprintf(commandBuffer,sizeof(commandBuffer),
+                   "set rxifgain %d\n",ifGain);
+
+          // Send the command.
+          sendRadioCommand(commandBuffer,0);
         } // if
 
         break;
