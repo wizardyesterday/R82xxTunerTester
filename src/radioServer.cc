@@ -26,6 +26,7 @@ struct MyParameters
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // Global variables.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+bool  exitSystem;
 TcpClient *networkInterfacePtr;
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -33,7 +34,7 @@ TcpClient *networkInterfacePtr;
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 static bool keyPressed(void);
 static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds);
-static void decodeMessageQueueCommand(char *bufferPtr);
+static bool decodeMessageQueueCommand(char *bufferPtr);
 
 /**************************************************************************
 
@@ -163,7 +164,7 @@ static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds)
   Purpose: The purpose of this function is to decode and process a
   message that was removed from the message queue.
 
-  Calling Sequence: status = decodeMessageQueueCommand(bufferPtr)
+  Calling Sequence: = decodeMessageQueueCnate ommand(bufferPtr)
  
   Inputs:
 
@@ -172,13 +173,64 @@ static void sendRadioCommand(char *commandPtr,uint32_t delayInMilliseconds)
 
   Outputs:
 
-    None.
+    terminate - A flag, that if set to true, indicates that a terminate
+    message arrived.
 
 **************************************************************************/
-static void decodeMessageQueueCommand(char *bufferPtr)
+static bool decodeMessageQueueCommand(char *bufferPtr)
 {
+  bool terminate;
+  int count;
+  int opcode;
+  int ifGain;
 
-  return;
+  // Indicate that a terminate message was not received.
+  terminate = false;
+
+  count = sscanf(bufferPtr,"%d",&opcode);
+
+  if (count > 0)
+  {
+    switch (opcode)
+    {
+      case RadioServerCmdSetIfGain:
+      {
+        count = scanf(bufferPtr,"%d %d",&opcode,&ifGain);
+
+        // All parameters have been sent.
+        if (count == 2)
+        {
+          printf("RadioServerCmdSetIfGain\n");
+          printf("s%",bufferPtr);
+        } // if
+
+        break;
+      } // case
+
+      case CmdTerminate:
+      {
+        printf("CmdTerminate\n");
+
+        // Indicate that a terminate message was received.
+        terminate = true;
+
+        break;
+      } // case
+
+      default:
+      {
+        // This was a bogus message,
+        // Indicate that a terminate message was received.
+        terminate = true;
+
+        break;
+      } // case
+
+    } // switch
+
+  } // if
+
+  return (terminate);
 
 } // decodeMessageQueueCommand
 
@@ -378,7 +430,7 @@ int main(int argc,char **argv)
     if (success)
     {
       // Invoke a message decoding function over here.
-     decodeMessageQueueCommand(queueBuffer);
+     done = decodeMessageQueueCommand(queueBuffer);
 
       // Send an ack with no payload.
       success = queuePtr->sendData(RadioServerTypeAck,
