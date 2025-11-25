@@ -270,7 +270,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   // Default parameters.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // The server IP address.
-  strcpy(parameters.hostIpAddressPtr,DEFAULT_SERVER_IP_ADDRESS);
+  strcpy(parameters.serverIpAddressPtr,DEFAULT_SERVER_IP_ADDRESS);
  
   // The server listener port.
   *parameters.serverPortPtr = DEFAULT_SERVER_PORT;
@@ -426,7 +426,7 @@ int main(int argc,char **argv)
 
     if (success)
     {
-      // Invoke a message decoding function over here.
+      // decode the message from the radio client.
      done = decodeMessageQueueCommand(queueBuffer);
 
       // Send an ack with no payload.

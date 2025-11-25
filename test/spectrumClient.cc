@@ -13,15 +13,12 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // Local defines.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-#define DEFAULT_SERVER_IP_ADDRESS "192.93.16.87"
-#define DEFAULT_SERVER_PORT (8001)
-
 
 // This structure is used to consolidate user parameters.
 struct MyParameters
 {
-  int *startingIfGainPtr;
-  int *endingIfGainPtr;
+  int *startingTagPtr;
+  int *endingTagPtr;
 };
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -33,7 +30,7 @@ struct MyParameters
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 static bool keyPressed(void);
 
-static bool sendIfGainCommand(int serverType,int ifGain,
+static bool sendComputePowerCommand(int serverType,int tag,
   IpcMessageQueue *queuePtr);
 
 static bool sendTerminateCommand(int serverType,IpcMessageQueue *queuePtr);
@@ -101,21 +98,20 @@ static bool keyPressed(void)
 
 /**************************************************************************
 
-  Name: sendIfGainCommand
+  Name: sendComputePowerCommand
 
-  Purpose: The purpose of this function is to send a radio IF gain
-  setting command to the radio server so that it  should marshall
-  the information into a message to send to the radio diags app.
+  Purpose: The purpose of this function is to send a power measurement
+  command to the spectrum server so.
 
-  Calling Sequence: success = sendIfGainCommand(serverType,
-                                                ifGain, 
+  Calling Sequence: success = sendComputePowerCommand(serverType,
+                                                tag,
                                                 queuePtr)
  
   Inputs:
 
-    serverType - The type of server for which to wait on. 
+    serverType - The type of server for which to send data.
 
-    ifGain - The IF gain for which to set the radio to.
+    tag - The tag field for which to write to an output file record.
 
     queuePtr - A pointer to the messag queue.
 
@@ -126,8 +122,8 @@ static bool keyPressed(void)
     indicates failure.
 
 **************************************************************************/
-static bool sendIfGainCommand(int serverType,
-  int ifGain,
+static bool sendComputePowerCommand(int serverType,
+  int tag,
   IpcMessageQueue *queuePtr)
 {
   bool success;
@@ -136,10 +132,10 @@ static bool sendIfGainCommand(int serverType,
   char buffer[256];
 
   // Use the enumeration.
-  command = RadioServerCmdSetIfGain;
+  command = SpectrumServerCmdComputePower;
 
   // Set up server command.
-  snprintf(buffer,sizeof(buffer),"%d %d\n",command,ifGain);
+  snprintf(buffer,sizeof(buffer),"%d %d\n",command,tag);
 
   // Compute number of bytes to send.
   bufferLength = strlen(buffer) + 1;
@@ -149,7 +145,7 @@ static bool sendIfGainCommand(int serverType,
 
   return (success);
 
-} // sendIfGainCommand
+} // sendComputePowerCommand
 
 /**************************************************************************
 
@@ -227,7 +223,7 @@ static bool waitForServerAck(int serverType,IpcMessageQueue *queuePtr)
   char buffer[80];
 
   // Wait for ack with no payload.
-  success = queuePtr->receiveData(RadioServerTypeAck,
+  success = queuePtr->receiveData(SpectrumServerTypeAck,
                                   buffer,
                                   &bufferLength);
 
@@ -273,9 +269,9 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default parameters.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-  // The radio starting and ending IF gains to cycle through.
-  *parameters.startingIfGainPtr = 0;
-  *parameters.endingIfGainPtr = 4;
+  // The radio starting and ending tags to cycle through.
+  *parameters.startingTagPtr = 0;
+  *parameters.endingTagPtr = 4;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Set up for loop entry.
@@ -293,22 +289,22 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
     {
       case 'S':
       {
-         // Retrieve the starting IF gain.
-        *parameters.startingIfGainPtr = atoi(optarg);
+         // Retrieve the starting tag.
+        *parameters.startingTagPtr = atoi(optarg);
         break;
       } // case
 
       case 'E':
       {
-         // Retrieve the ending IF gain.
-        *parameters.endingIfGainPtr = atoi(optarg);
+         // Retrieve the ending tag.
+        *parameters.endingTagPtr = atoi(optarg);
         break;
       } // case
 
       case 'h':
       {
         // Display usage.
-        fprintf(stderr,"./tcpClient -S <startingIfGain -E <endingifGain\n");
+        fprintf(stderr,"./spectrumClient -S <startingtag -E <endingtag\n");
 
         // Indicate that program must be exited.
         exitProgram = true;
@@ -339,22 +335,19 @@ int main(int argc,char **argv)
   bool success;
   bool done;
   bool exitProgram;
-  int startingIfGain;
-  int endingIfGain;
+  int tag;
+  int startingTag;
+  int endingTag;
   struct MyParameters parameters;
   char inputBuffer[256];
 
   // Message queue support.
-  int ifGain;
   IpcMessageQueue *queuePtr;
   char *chPtr;
-  char queueBuffer[16384];
-  size_t queueBufferLength;
-  int sendLength;
   
   // Set up for parameter transmission.
-  parameters.startingIfGainPtr = &startingIfGain;
-  parameters.endingIfGainPtr = &endingIfGain;
+  parameters.startingTagPtr = &startingTag;
+  parameters.endingTagPtr = &endingTag;
 
   // Retrieve the system parameters.
   exitProgram = getUserArguments(argc,argv,parameters);
@@ -378,7 +371,7 @@ int main(int argc,char **argv)
   done = false;
 
   // Initialize.
-  ifGain = startingIfGain;
+  tag = startingTag;
 
   while (!done)
   {
@@ -389,23 +382,23 @@ int main(int argc,char **argv)
     {
       switch(inputBuffer[0])
       {
-        case 'r':
+        case 'm':
         {
-          success = sendIfGainCommand(RadioServerTypeCommand,ifGain,queuePtr);
+          success = sendComputePowerCommand(SpectrumServerTypeCmd,tag,queuePtr);
 
           if (success)
           {
             // Qait for the server ack.
-            success = waitForServerAck(RadioServerTypeAck,queuePtr);
+            success = waitForServerAck(SpectrumServerTypeAck,queuePtr);
           } //  if
 
-          // Increment the IF gain.
-          ifGain++;
+          // Increment the tag;
+          tag++;
 
-          if (ifGain > endingIfGain)
+          if (tag > endingTag)
           {
             // Wrap it.
-            ifGain = startingIfGain;
+            tag = startingTag;
           } // if
 
           break;

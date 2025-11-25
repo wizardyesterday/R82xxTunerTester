@@ -338,18 +338,15 @@ int main(int argc,char **argv)
   bool success;
   bool done;
   bool exitProgram;
+  int ifGain;
   int startingIfGain;
   int endingIfGain;
   struct MyParameters parameters;
   char inputBuffer[256];
 
   // Message queue support.
-  int ifGain;
   IpcMessageQueue *queuePtr;
   char *chPtr;
-  char queueBuffer[16384];
-  size_t queueBufferLength;
-  int sendLength;
   
   // Set up for parameter transmission.
   parameters.startingIfGainPtr = &startingIfGain;

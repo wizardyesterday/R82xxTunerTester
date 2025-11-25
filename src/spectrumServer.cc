@@ -13,17 +13,19 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // Local defines.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-#define DEFAULT_FILENAME "/home/chris/mySpectrumFile.txt"
+#define DEFAULT_FILENAME "mySpectrumFile.txt"
 
 // This structure is used to consolidate user parameters.
 struct MyParameters
 {
   char *filenamePtr;
+  float *bandwidthInHzPtr;
 };
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // Global variables.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+float bandwidthInHz;
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // Static functions.
@@ -118,6 +120,7 @@ static bool decodeMessageQueueCommand(char *bufferPtr,char *filenamePtr)
   int count;
   int opcode;
   int tag;
+  float bandwidthInHz;
   char commandBuffer[4096];
 
   // Indicate that a terminate message was not received.
@@ -125,20 +128,22 @@ static bool decodeMessageQueueCommand(char *bufferPtr,char *filenamePtr)
 
   count = sscanf(bufferPtr,"%d",&opcode);
 
+  fprintf(stderr,"count: %d %d\n",count,opcode);
+
   if (count > 0)
   {
     switch (opcode)
     {
       case SpectrumServerCmdComputePower:
       {
-        count = sscanf(bufferPtr,"%d %d",&opcode,&tag);
+        count = sscanf(bufferPtr,"%d %d %f",&opcode,&tag,&bandwidthInHz);
 
         // All parameters have been sent.
-        if (count == 2)
+        if (count == 3)
         {
           // Construct radio command string.
           snprintf(commandBuffer,sizeof(commandBuffer),
-                   "netcat -l -u -p 8001 | ./analyzer -B 500 "
+                   "netcat -l -u -p 8001 | ./analyzer -B %f "
                    "-t %d >> %s\n",tag,filenamePtr);
 
           // Execute the command.
@@ -210,6 +215,9 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // The output file name.
   strcpy(parameters.filenamePtr,DEFAULT_FILENAME);
+
+  // Default bandwidth.
+  *parameters.bandwidthInHzPtr = 500;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Set up for loop entry.
@@ -221,7 +229,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   while (!done)
   {
     // Retrieve the next option.
-    opt = getopt(argc,argv,"a:p:m:h");
+    opt = getopt(argc,argv,"f:b:h");
 
     switch (opt)
     {
@@ -229,6 +237,13 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
       {
         // Retrieve the file name.
         strcpy(parameters.filenamePtr,optarg);
+        break;
+      } // case
+
+      case 'b':
+      {
+        // Retrieve the bandwidth.
+         *parameters.bandwidthInHzPtr = atof(optarg);
         break;
       } // case
 
@@ -278,6 +293,7 @@ int main(int argc,char **argv)
 
   // Set up for parameter transmission.
   parameters.filenamePtr = filename;
+  parameters.bandwidthInHzPtr = &bandwidthInHz;
 
   // Retrieve the system parameters.
   exitProgram = getUserArguments(argc,argv,parameters);
@@ -315,7 +331,7 @@ int main(int argc,char **argv)
 
     if (success)
     {
-      // Invoke a message decoding function over here.
+      // Decode the message from the spectrum client.
      done = decodeMessageQueueCommand(queueBuffer,filename);
 
       // Send an ack with no payload.
