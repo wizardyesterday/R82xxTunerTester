@@ -42,8 +42,7 @@ static bool decodeMessageQueueCommand(char *bufferPtr);
   Purpose: The purpose of this function is to determine of any key
   was pressed on the keyboard.
 
-  Calling Sequence: status = sendRadioCommand(commandPtr,
-                                              delayInMilliseconds)
+  Calling Sequence: status = status = keyPressed();
  
   Inputs:
 
@@ -271,7 +270,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   // Default parameters.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // The server IP address.
-  strcpy(parameters.serverIpAddressPtr,DEFAULT_SERVER_IP_ADDRESS);
+  strcpy(parameters.hostIpAddressPtr,DEFAULT_SERVER_IP_ADDRESS);
  
   // The server listener port.
   *parameters.serverPortPtr = DEFAULT_SERVER_PORT;
@@ -307,7 +306,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
       case 'h':
       {
         // Display usage.
-        fprintf(stderr,"./tcpClient -a <serverIpAddress: x.x.x.x> "
+        fprintf(stderr,"./radioserver -a <serverIpAddress: x.x.x.x> "
                 "-p <serverPort>\n");
 
         // Indicate that program must be exited.

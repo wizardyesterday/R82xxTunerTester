@@ -46,7 +46,8 @@ static bool waitForServerAck(int serverType,IpcMessageQueue *queuePtr);
   Purpose: The purpose of this function is to determine of any key
   was pressed on the keyboard.
 
-  Calling Sequence: status = keyPressed()
+  Calling Sequence: status = sendRadioCommand(commandPtr,
+                                              delayInMilliseconds)
  
   Inputs:
 
@@ -415,7 +416,7 @@ int main(int argc,char **argv)
           // Notify the server to exit.
           success = sendTerminateCommand(RadioServerTypeCommand,queuePtr);
 
-          // We don't care about the ack since the server has exited.
+          // Thre is no ack for this message.
 
           // We're done, so let's bail out.
           done = true;
