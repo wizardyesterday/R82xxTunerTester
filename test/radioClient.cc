@@ -20,7 +20,8 @@
 // This structure is used to consolidate user parameters.
 struct MyParameters
 {
-  int *ifGainPtr;
+  int *startingIfGainPtr;
+  int *endingIfGainPtr;
 };
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -272,8 +273,9 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default parameters.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-  // The radio IF gain..
-  *parameters.ifGainPtr = 0;
+  // The radio starting and ending IF gains to cycle through.
+  *parameters.startingIfGainPtr = 0;
+  *parameters.endingIfGainPtr = 4;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Set up for loop entry.
@@ -285,21 +287,28 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   while (!done)
   {
     // Retrieve the next option.
-    opt = getopt(argc,argv,"G:h");
+    opt = getopt(argc,argv,"S:E:h");
 
     switch (opt)
     {
-      case 'G':
+      case 'S':
       {
-         // Retrieve the IF gain..
-        *parameters.ifGainPtr = atoi(optarg);
+         // Retrieve the starting IF gain.
+        *parameters.startingIfGainPtr = atoi(optarg);
+        break;
+      } // case
+
+      case 'E':
+      {
+         // Retrieve the ending IF gain.
+        *parameters.endingIfGainPtr = atoi(optarg);
         break;
       } // case
 
       case 'h':
       {
         // Display usage.
-        fprintf(stderr,"./tcpClient -G <ifGain\n");
+        fprintf(stderr,"./tcpClient -S <startingIfGain -E <endingifGain\n");
 
         // Indicate that program must be exited.
         exitProgram = true;
@@ -330,6 +339,8 @@ int main(int argc,char **argv)
   bool success;
   bool done;
   bool exitProgram;
+  int startingIfGain;
+  int endingIfGain;
   struct MyParameters parameters;
   char inputBuffer[256];
 
@@ -342,7 +353,8 @@ int main(int argc,char **argv)
   int sendLength;
   
   // Set up for parameter transmission.
-  parameters.ifGainPtr = &ifGain;
+  parameters.startingIfGainPtr = &startingIfGain;
+  parameters.endingIfGainPtr = &endingIfGain;
 
   // Retrieve the system parameters.
   exitProgram = getUserArguments(argc,argv,parameters);
@@ -364,6 +376,9 @@ int main(int argc,char **argv)
   } // if
   // Set up for loop entry.
   done = false;
+
+  // Initialize.
+  ifGain = startingIfGain;
 
   while (!done)
   {
@@ -387,10 +402,10 @@ int main(int argc,char **argv)
           // Increment the IF gain.
           ifGain++;
 
-          if (ifGain > 46)
+          if (ifGain > endingIfGain)
           {
             // Wrap it.
-            ifGain = 0;
+            ifGain = startingIfGain;
           } // if
 
           break;
@@ -401,7 +416,7 @@ int main(int argc,char **argv)
           // Notify the server to exit.
           success = sendTerminateCommand(RadioServerTypeCommand,queuePtr);
 
-          // Don't worry about waiting for an ack.
+          // Thre is no ack for this message.
 
           // We're done, so let's bail out.
           done = true;
