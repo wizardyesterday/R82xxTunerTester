@@ -279,7 +279,7 @@ static bool waitForServerAck(int serverType,IpcMessageQueue *queuePtr)
   char buffer[80];
 
   // Wait for ack with no payload.
-  success = queuePtr->receiveData(RadioServerTypeAck,
+  success = queuePtr->receiveData(serverType,
                                   buffer,
                                   &bufferLength);
 
