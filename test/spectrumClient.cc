@@ -407,7 +407,7 @@ int main(int argc,char **argv)
         case 'e':
         {
           // Notify the server to exit.
-          success = sendTerminateCommand(SpectrumServerTypeCommand,queuePtr);
+          success = sendTerminateCommand(SpectrumServerTypeCmd,queuePtr);
 
           // Acks are not sent when a server is told to terminate..
 
