@@ -35,7 +35,7 @@ static bool keyPressed(void);
 static bool sendIfGainCommand(int serverType,int ifGain,
   IpcMessageQueue *queuePtr);
 
-static bool sendComputePowerCommand(int serverType,int tag,
+static bool sendPowerCommand(int serverType,int tag,
   IpcMessageQueue *queuePtr);
 
 static bool sendTerminateCommand(int serverType,IpcMessageQueue *queuePtr);
@@ -152,17 +152,17 @@ static bool sendIfGainCommand(int serverType,
 
 } // sendIfGainCommand
 
-//**************************************************************************
+/**************************************************************************
 
-  Name: sendComputePowerCommand
+  Name: sendPowerCommand
 
   Purpose: The purpose of this function is to send a power measurement
   command to the spectrum server so.
 
-  Calling Sequence: success = sendComputePowerCommand(serverType,
+  Calling Sequence: success = sendPowerCommand(serverType,
                                                 tag,
                                                 queuePtr)
- 
+
   Inputs:
 
     serverType - The type of server for which to send data.
@@ -175,10 +175,10 @@ static bool sendIfGainCommand(int serverType,
 
     success - A flag hat indicates whether or not the operation succeded
     or failed. A value of true indicates success, and a value of false
-    indicates failure.
+    indicates failure. 
 
 **************************************************************************/
-static bool sendComputePowerCommand(int serverType,
+static bool sendPowerCommand(int serverType,
   int tag,
   IpcMessageQueue *queuePtr)
 {
@@ -201,9 +201,9 @@ static bool sendComputePowerCommand(int serverType,
 
   return (success);
 
-} // sendComputePowerCommand
+} // sendPowerCommand
 
-**************************************************************************
+/**************************************************************************
 
   Name: sendTerminateCommand
 
@@ -468,7 +468,7 @@ int main(int argc,char **argv)
       {
         case 'r':
         {
-          success = sendIfGainCommand(RadioServerTypeCommand,ifGain,queuePtr);
+          success = sendIfGainCommand(RadioServerTypeCmd,ifGain,queuePtr);
 
           if (success)
           {
@@ -490,7 +490,7 @@ int main(int argc,char **argv)
 
         case 'm':
         {
-          success = sendComputePowerCommand(SpectrumServerTypeCmd,tag,queuePtr);
+          success = sendPowerCommand(SpectrumServerTypeCmd,tag,queuePtr);
 
           if (success)
           {
@@ -513,8 +513,8 @@ int main(int argc,char **argv)
         case 'e':
         {
           // Notify the servers to exit.
-          success = sendTerminateCommand(RadioServerTypeCommand,queuePtr);
-          success = sendTerminateCommand(SpectrumServerTypeCommand,queuePtr);
+          success = sendTerminateCommand(RadioServerTypeCmd,queuePtr);
+          success = sendTerminateCommand(SpectrumServerTypeCmd,queuePtr);
 
           // Acks are not sent when a server is told to terminate..
 

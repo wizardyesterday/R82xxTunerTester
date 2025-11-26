@@ -420,7 +420,7 @@ int main(int argc,char **argv)
   while (!done)
   {
     // Wait for a commmand.
-    success = queuePtr->receiveData(RadioServerTypeCommand,
+    success = queuePtr->receiveData(RadioServerTypeCmd,
                                    queueBuffer,
                                    &queueBufferLength);
 

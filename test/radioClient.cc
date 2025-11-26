@@ -384,7 +384,7 @@ int main(int argc,char **argv)
       {
         case 'r':
         {
-          success = sendIfGainCommand(RadioServerTypeCommand,ifGain,queuePtr);
+          success = sendIfGainCommand(RadioServerTypeCmd,ifGain,queuePtr);
 
           if (success)
           {
@@ -407,7 +407,7 @@ int main(int argc,char **argv)
         case 'e':
         {
           // Notify the server to exit.
-          success = sendTerminateCommand(RadioServerTypeCommand,queuePtr);
+          success = sendTerminateCommand(RadioServerTypeCmd,queuePtr);
 
           // Acks are not sent when a server is told to terminate..
 

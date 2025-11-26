@@ -30,7 +30,7 @@
 //_______________________________________________________
 enum MessageType
 {
-  RadioServerTypeCommand = 1,
+  RadioServerTypeCmd = 1,
   RadioServerTypeAck,
   SpectrumServerTypeCmd,
   SpectrumServerTypeAck
