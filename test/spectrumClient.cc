@@ -269,7 +269,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default parameters.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-  // The radio starting and ending tags to cycle through.
+  // The starting and ending tags to cycle through.
   *parameters.startingTagPtr = 0;
   *parameters.endingTagPtr = 4;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -407,9 +407,9 @@ int main(int argc,char **argv)
         case 'e':
         {
           // Notify the server to exit.
-          success = sendTerminateCommand(RadioServerTypeCommand,queuePtr);
+          success = sendTerminateCommand(SpectrumServerTypeCommand,queuePtr);
 
-          // Thre is no ack for this message.
+          // Acks are not sent when a server is told to terminate..
 
           // We're done, so let's bail out.
           done = true;

@@ -331,10 +331,13 @@ int main(int argc,char **argv)
       // Decode the message from the spectrum client.
      done = decodeMessageQueueCommand(queueBuffer,filename);
 
-      // Send an ack with no payload.
-      success = queuePtr->sendData(SpectrumServerTypeAck,
-                                   queueBuffer,
-                                   0);
+      if (!done)
+      {
+        // Send an ack with no payload.
+        success = queuePtr->sendData(SpectrumServerTypeAck,
+                                     queueBuffer,
+                                     0);
+      } // if
     } // if
 
     if (!success)

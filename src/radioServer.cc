@@ -427,12 +427,15 @@ int main(int argc,char **argv)
     if (success)
     {
       // decode the message from the radio client.
-     done = decodeMessageQueueCommand(queueBuffer);
+      done = decodeMessageQueueCommand(queueBuffer);
 
-      // Send an ack with no payload.
-      success = queuePtr->sendData(RadioServerTypeAck,
-                                   queueBuffer,
-                                   0);
+      if (!done)
+      {
+        // Send an ack with no payload.
+        success = queuePtr->sendData(RadioServerTypeAck,
+                                     queueBuffer,
+                                     0);
+      } // if
     } // if
 
     if (!success)

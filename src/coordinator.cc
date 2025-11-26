@@ -19,6 +19,8 @@ struct MyParameters
 {
   int *startingIfGainPtr;
   int *endingIfGainPtr;
+  int *startingTagPtr;
+  int *endingTagPtr;
 };
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -31,6 +33,9 @@ struct MyParameters
 static bool keyPressed(void);
 
 static bool sendIfGainCommand(int serverType,int ifGain,
+  IpcMessageQueue *queuePtr);
+
+static bool sendComputePowerCommand(int serverType,int tag,
   IpcMessageQueue *queuePtr);
 
 static bool sendTerminateCommand(int serverType,IpcMessageQueue *queuePtr);
@@ -147,7 +152,58 @@ static bool sendIfGainCommand(int serverType,
 
 } // sendIfGainCommand
 
-/**************************************************************************
+//**************************************************************************
+
+  Name: sendComputePowerCommand
+
+  Purpose: The purpose of this function is to send a power measurement
+  command to the spectrum server so.
+
+  Calling Sequence: success = sendComputePowerCommand(serverType,
+                                                tag,
+                                                queuePtr)
+ 
+  Inputs:
+
+    serverType - The type of server for which to send data.
+
+    tag - The tag field for which to write to an output file record.
+
+    queuePtr - A pointer to the messag queue.
+
+  Outputs:
+
+    success - A flag hat indicates whether or not the operation succeded
+    or failed. A value of true indicates success, and a value of false
+    indicates failure.
+
+**************************************************************************/
+static bool sendComputePowerCommand(int serverType,
+  int tag,
+  IpcMessageQueue *queuePtr)
+{
+  bool success;
+  int command;
+  size_t bufferLength;
+  char buffer[256];
+
+  // Use the enumeration.
+  command = SpectrumServerCmdComputePower;
+
+  // Set up server command.
+  snprintf(buffer,sizeof(buffer),"%d %d\n",command,tag);
+
+  // Compute number of bytes to send.
+  bufferLength = strlen(buffer) + 1;
+
+  // Send commmand.
+  success = queuePtr->sendData(serverType,buffer,bufferLength);
+
+  return (success);
+
+} // sendComputePowerCommand
+
+**************************************************************************
 
   Name: sendTerminateCommand
 
@@ -269,9 +325,13 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default parameters.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-  // The radio starting and ending IF gains to cycle through.
+  // The radio starting and ending IF gains to span.
   *parameters.startingIfGainPtr = 0;
   *parameters.endingIfGainPtr = 4;
+
+  // The starting and ending tags to sspan.
+  *parameters.startingTagPtr = 0;
+  *parameters.endingTagPtr = 4;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Set up for loop entry.
@@ -283,28 +343,44 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   while (!done)
   {
     // Retrieve the next option.
-    opt = getopt(argc,argv,"S:E:h");
+    opt = getopt(argc,argv,"L:U:S:E:h");
 
     switch (opt)
     {
-      case 'S':
+
+      case 'L':
       {
          // Retrieve the starting IF gain.
         *parameters.startingIfGainPtr = atoi(optarg);
         break;
       } // case
 
-      case 'E':
+      case 'U':
       {
          // Retrieve the ending IF gain.
         *parameters.endingIfGainPtr = atoi(optarg);
         break;
       } // case
 
+      case 'S':
+      {
+         // Retrieve the starting tag.
+        *parameters.startingTagPtr = atoi(optarg);
+        break;
+      } // case
+
+      case 'E':
+      {
+         // Retrieve the ending tag.
+        *parameters.endingTagPtr = atoi(optarg);
+        break;
+      } // case
+
       case 'h':
       {
         // Display usage.
-        fprintf(stderr,"./tcpClient -S <startingIfGain -E <endingifGain\n");
+        fprintf(stderr,"./systemCoordinator -L <startingIfGain "
+                       "-U <endingifGain -S <startingTag> -E <endingTag>\n");
 
         // Indicate that program must be exited.
         exitProgram = true;
@@ -338,6 +414,10 @@ int main(int argc,char **argv)
   int ifGain;
   int startingIfGain;
   int endingIfGain;
+  int tag;
+  int startingTag;
+  int endingTag;
+
   struct MyParameters parameters;
   char inputBuffer[256];
 
@@ -348,6 +428,8 @@ int main(int argc,char **argv)
   // Set up for parameter transmission.
   parameters.startingIfGainPtr = &startingIfGain;
   parameters.endingIfGainPtr = &endingIfGain;
+  parameters.startingTagPtr = &startingTag;
+  parameters.endingTagPtr = &endingTag;
 
   // Retrieve the system parameters.
   exitProgram = getUserArguments(argc,argv,parameters);
@@ -372,6 +454,8 @@ int main(int argc,char **argv)
 
   // Initialize.
   ifGain = startingIfGain;
+  // Initialize.
+  tag = startingTag;
 
   while (!done)
   {
@@ -404,10 +488,33 @@ int main(int argc,char **argv)
           break;
         } // case
 
+        case 'm':
+        {
+          success = sendComputePowerCommand(SpectrumServerTypeCmd,tag,queuePtr);
+
+          if (success)
+          {
+            // Qait for the server ack.
+            success = waitForServerAck(SpectrumServerTypeAck,queuePtr);
+          } //  if
+
+          // Increment the tag;
+          tag++;
+
+          if (tag > endingTag)
+          {
+            // Wrap it.
+            tag = startingTag;
+          } // if
+
+          break;
+        } // case
+
         case 'e':
         {
-          // Notify the server to exit.
+          // Notify the servers to exit.
           success = sendTerminateCommand(RadioServerTypeCommand,queuePtr);
+          success = sendTerminateCommand(SpectrumServerTypeCommand,queuePtr);
 
           // Acks are not sent when a server is told to terminate..
 
