@@ -454,11 +454,15 @@ int main(int argc,char **argv)
 
   // Initialize.
   ifGain = startingIfGain;
-  // Initialize.
   tag = startingTag;
+
+  printf("Coordinator up and running\n");
+  printf("Press <m> to measure, <e> to exit\n");
 
   while (!done)
   {
+    printf("tag: %d    ifGain: %d\n",tag,ifGain);
+
     // Get user command)
     chPtr = fgets(inputBuffer,80,stdin);
 
@@ -466,7 +470,7 @@ int main(int argc,char **argv)
     {
       switch(inputBuffer[0])
       {
-        case 'r':
+        case 'm':
         {
           success = sendIfGainCommand(RadioServerTypeCmd,ifGain,queuePtr);
 
@@ -485,11 +489,6 @@ int main(int argc,char **argv)
             ifGain = startingIfGain;
           } // if
 
-          break;
-        } // case
-
-        case 'm':
-        {
           success = sendPowerCommand(SpectrumServerTypeCmd,tag,queuePtr);
 
           if (success)
