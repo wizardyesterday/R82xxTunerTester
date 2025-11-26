@@ -120,15 +120,12 @@ static bool decodeMessageQueueCommand(char *bufferPtr,char *filenamePtr)
   int count;
   int opcode;
   int tag;
-  float bandwidthInHz;
   char commandBuffer[4096];
 
   // Indicate that a terminate message was not received.
   terminate = false;
 
   count = sscanf(bufferPtr,"%d",&opcode);
-
-  fprintf(stderr,"count: %d %d\n",count,opcode);
 
   if (count > 0)
   {
@@ -139,16 +136,16 @@ static bool decodeMessageQueueCommand(char *bufferPtr,char *filenamePtr)
         count = sscanf(bufferPtr,"%d %d %f",&opcode,&tag,&bandwidthInHz);
 
         // All parameters have been sent.
-        if (count == 3)
+        if (count == 2)
         {
           // Construct radio command string.
           snprintf(commandBuffer,sizeof(commandBuffer),
-                   "netcat -l -u -p 8001 | ./analyzer -B %f "
-                   "-t %d >> %s\n",tag,filenamePtr);
+                   "netcat -l -u -p 8001 | ./spectrumProcessor -B %f "
+                   "-t %d >> %s\n",bandwidthInHz,tag,filenamePtr);
 
           // Execute the command.
           printf(commandBuffer);
-//          system(command);
+          system(commandBuffer);
         } // if
 
         break;
@@ -250,7 +247,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
       case 'h':
       {
         // Display usage.
-        fprintf(stderr,"./spectrumServer -f <filename>\n");
+        fprintf(stderr,"./spectrumServer -f <filename> -b <bandwidthInHz\n");
 
         // Indicate that program must be exited.
         exitProgram = true;
