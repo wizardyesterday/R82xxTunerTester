@@ -13,9 +13,6 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // Local defines.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-#define DEFAULT_SERVER_IP_ADDRESS "192.93.16.87"
-#define DEFAULT_SERVER_PORT (8001)
-
 
 // This structure is used to consolidate user parameters.
 struct MyParameters
