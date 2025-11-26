@@ -388,7 +388,7 @@ int main(int argc,char **argv)
 
           if (success)
           {
-            // Qait for the server ack.
+            // Wait for the server ack.
             success = waitForServerAck(RadioServerTypeAck,queuePtr);
           } //  if
 
