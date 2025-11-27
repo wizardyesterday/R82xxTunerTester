@@ -240,6 +240,9 @@ ssize_t  TcpClient::receiveData(void *bufferPtr,int bufferLength)
     // Reference the buffer in the octet context.
     octetPtr = (unsigned char *)bufferPtr;
 
+    // Clear before use. We only have to do this once.
+    FD_ZERO(&readFds);
+
     // Set up for loop entry.
     done = false;
 
@@ -248,9 +251,6 @@ ssize_t  TcpClient::receiveData(void *bufferPtr,int bufferLength)
       //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
       // This block of code is necessary when working with TCP.
       //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-      // Clear before use.
-      FD_ZERO(&readFds);
-
       FD_SET(socketDescriptor,&readFds);
 
       // set up timeout value to 200 milliseconds.
