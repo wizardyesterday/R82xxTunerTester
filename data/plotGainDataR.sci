@@ -1,4 +1,7 @@
-// Title: plotGainData.sci
+// Title: plotGainDataR.sci
+// This program plots gain data when the input data file was obtained by
+// using the RTL2832U AGC limit registers R9 and R10 to set the IF gain
+// of the tuner.
 
 // mainline code.
 
