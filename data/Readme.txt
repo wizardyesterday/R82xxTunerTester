@@ -16,4 +16,16 @@ The file has the following formate for each record:
 
 <IF gain, just a tag> <magnitude-squared representation of power> <log power>
 
+There are two Scilab files in this directory listed below:
+
+1. plotGainDataR.sci
+2. plotGainDataT.sci
+
+The first file is used to plot data generayed when using the RTL2832 for
+IF gain setting.
+Yhe second file is used to plot data generated when using tuner register
+R12 for setting the IF gain.
+
+Other than plot annotations, the two Scilab files are identical.
+:w
 
