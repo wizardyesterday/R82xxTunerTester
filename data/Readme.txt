@@ -27,5 +27,4 @@ Yhe second file is used to plot data generated when using tuner register
 R12 for setting the IF gain.
 
 Other than plot annotations, the two Scilab files are identical.
-:w
 
