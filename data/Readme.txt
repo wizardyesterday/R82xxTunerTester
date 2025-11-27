@@ -21,7 +21,7 @@ There are two Scilab files in this directory listed below:
 1. plotGainDataR.sci
 2. plotGainDataT.sci
 
-The first file is used to plot data generayed when using the RTL2832 for
+The first file is used to plot data generated when using the RTL2832 for
 IF gain setting.
 Yhe second file is used to plot data generated when using tuner register
 R12 for setting the IF gain.
