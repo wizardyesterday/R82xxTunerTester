@@ -11,6 +11,6 @@ gainData = fscanfMat('myGainData.txt');
 plot(gainData(:,3));
 xgrid();
 title('R82xx Tuner Gain vs. R82xx AGC Register Setting');
-xlabel('Specifiwd Gain Value, dBValue');
+xlabel('Specifiwd Gain Value, dB');
 ylabel('Gain, dB');
 
