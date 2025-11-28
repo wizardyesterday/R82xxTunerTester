@@ -335,7 +335,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   *parameters.endingTagPtr = 4;
 
   // Default to manual mode.
-  parameters.automaticModePtr = false;
+  *parameters.automaticModePtr = false;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Set up for loop entry.
@@ -347,7 +347,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   while (!done)
   {
     // Retrieve the next option.
-    opt = getopt(argc,argv,"L:U:S:E:h");
+    opt = getopt(argc,argv,"L:U:S:E:Ah");
 
     switch (opt)
     {
@@ -382,8 +382,8 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
 
       case 'A':
       {
-         // Retrieve the automatic mode flag.
-        *parameters.automaticModePtr = atoi(optarg);
+         // Set the automatic mode flag.
+        *parameters.automaticModePtr = true;
         break;
       } // case
 
@@ -421,6 +421,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
 int main(int argc,char **argv)
 {
   // Miscellaneous support.
+  int i;
   bool success;
   bool done;
   bool exitProgram;
@@ -471,95 +472,138 @@ int main(int argc,char **argv)
   ifGain = startingIfGain;
   tag = startingTag;
 
-  printf("Coordinator up and running\n");
-  printf("Press <m> to measure, <e> to exit\n");
-
-  while (!done)
+  if (!automaticMode)
   {
-    printf("tag: %d    ifGain: %d\n",tag,ifGain);
 
-    // Get user command)
-    chPtr = fgets(inputBuffer,80,stdin);
+    printf("Coordinator up and running\n");
+    printf("Press <m> to measure, <e> to exit\n");
 
-    if (chPtr != NULL) 
+    while (!done)
     {
-      switch(inputBuffer[0])
+      printf("tag: %d    ifGain: %d\n",tag,ifGain);
+
+      // Get user command)
+      chPtr = fgets(inputBuffer,80,stdin);
+
+      if (chPtr != NULL) 
       {
-        case 'm':
+        switch(inputBuffer[0])
         {
-          success = sendIfGainCommand(RadioServerTypeCmd,ifGain,queuePtr);
-
-          if (success)
+          case 'm':
           {
-            // Wait for the server ack.
-            success = waitForServerAck(RadioServerTypeAck,queuePtr);
-          } //  if
+            success = sendIfGainCommand(RadioServerTypeCmd,ifGain,queuePtr);
 
-          // Increment the IF gain.
-          ifGain++;
+            if (success)
+            {
+              // Wait for the server ack.
+              success = waitForServerAck(RadioServerTypeAck,queuePtr);
+            } //  if
 
-          if (ifGain > endingIfGain)
+            // Increment the IF gain.
+            ifGain++;
+  
+            if (ifGain > endingIfGain)
+            {
+              // Wrap it.
+              ifGain = startingIfGain;
+            } // if
+
+            success = sendPowerCommand(SpectrumServerTypeCmd,tag,queuePtr);
+
+            if (success)
+            {
+              // Wait for the server ack.
+              success = waitForServerAck(SpectrumServerTypeAck,queuePtr);
+            } //  if
+
+            // Increment the tag;
+            tag++;
+
+            if (tag > endingTag)
+            {
+              // Wrap it.
+              tag = startingTag;
+            } // if
+
+            break;
+          } // case
+
+          case 'e':
           {
-            // Wrap it.
-            ifGain = startingIfGain;
-          } // if
+            // Notify the servers to exit.
+            success = sendTerminateCommand(RadioServerTypeCmd,queuePtr);
+            success = sendTerminateCommand(SpectrumServerTypeCmd,queuePtr);
 
-          success = sendPowerCommand(SpectrumServerTypeCmd,tag,queuePtr);
+            // Acks are not sent when a server is told to terminate..
 
-          if (success)
+            // We're done, so let's bail out.
+            done = true;
+  
+            break;
+          } // case
+
+          default:
           {
-            // Wait for the server ack.
-            success = waitForServerAck(SpectrumServerTypeAck,queuePtr);
-          } //  if
+            break;
+          } // case
 
-          // Increment the tag;
-          tag++;
+        } // switch
 
-          if (tag > endingTag)
-          {
-            // Wrap it.
-            tag = startingTag;
-          } // if
-
-          break;
-        } // case
-
-        case 'e':
+        if (!success)
         {
-          // Notify the servers to exit.
-          success = sendTerminateCommand(RadioServerTypeCmd,queuePtr);
-          success = sendTerminateCommand(SpectrumServerTypeCmd,queuePtr);
-
-          // Acks are not sent when a server is told to terminate..
-
-          // We're done, so let's bail out.
+          // Bail out of loop.
           done = true;
-
-          break;
-        } // case
-
-       default:
-        {
-          break;
-        } // case
-
-      } // switch
-
-      if (!success)
+        } // if
+  
+      } // if
+      else
       {
         // Bail out of loop.
         done = true;
-      } // if
-  
-    } // if
-    else
-    {
-      // Bail out of loop.
-      done = true;
-    } // else
+      } // else
 
-  } // while
-  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+    } // while
+
+  } // if
+  else
+  {
+    for (tag = startingTag; tag <= endingTag; tag++)
+    {
+      printf("tag: %d    ifGain: %d\n",tag,ifGain);
+
+      success = sendIfGainCommand(RadioServerTypeCmd,ifGain,queuePtr);
+
+      if (success)
+      {
+        // Wait for the server ack.
+        success = waitForServerAck(RadioServerTypeAck,queuePtr);
+      } //  if
+
+      // Increment the IF gain.
+      ifGain++;
+
+      success = sendPowerCommand(SpectrumServerTypeCmd,tag,queuePtr);
+
+      if (success)
+      {
+        // Wait for the server ack.
+        success = waitForServerAck(SpectrumServerTypeAck,queuePtr);
+      } //  if
+
+      if (ifGain > endingIfGain)
+      {
+        // Wrap it.
+        ifGain = startingIfGain;
+      } // if
+
+    } // for
+
+    // Notify the servers to exit.
+    success = sendTerminateCommand(RadioServerTypeCmd,queuePtr);
+    success = sendTerminateCommand(SpectrumServerTypeCmd,queuePtr);
+
+    // Acks are not sent when a server is told to terminate..
+  } // else
 
   // Release resources.
   delete queuePtr;

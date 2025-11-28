@@ -41,23 +41,20 @@ and waiting for an ack, the coordinator will then send a message to the
 spectrum server (and wait for an ack), with the result that a power measurement
 can be made. The cycle then repeats, based upon the numbe of measurements
 that were specified by the user.
-The user can type 'm' to  command the radio to set the receive IF gain, and
-type 'e' which will result in the coordinator notifying both the radio server
-and the spectrum server to terminate execution. Te coordinator wil also
-terminate execution.
-Initially, I was going to have the coordinator execute in a loop a user-
-specified number of times and perform terminate processing. I decided that it
-was more appropriate to provide an interactive approach so that the user
-could see some sort of feedback on a per-measurment basis. The coordinator
-will then autoincrement the parameters sent to the radio server and spectrum
-server. It's easy enough to make the coordinator operate in a fully
-automatic mode if desired. I may specify that as a command line option
-
+For manual mode, the user can type 'm' to  command the radio to set the receive
+IF gain, followed by a power measurement, and type 'e' which will result in
+the coordinator notifying both the radio server and the spectrum server
+to terminate execution. The coordinator wil also terminate execution.
+The coordinator execute in a loop a user-specified number of times and perform
 it will exit.
+For automatic mode, the same actions, stated above, will occur with no user
+interaction. That is, the loop will be executed the user-specified number of
+times, and after the loop exits, the radio server and spectrum server will
+be told to terminate execution, and the coordinator will also terminate
+execution.
 
-
+2.0 Building the application
 To build this application, type 'sh buildSystem.sh'.
 To remove executable files, type 'sh clean.sh'.
 
-I'll improve this file later.
 
