@@ -21,6 +21,7 @@ struct MyParameters
   int *endingIfGainPtr;
   int *startingTagPtr;
   int *endingTagPtr;
+  bool *automaticModePtr;
 };
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -332,6 +333,9 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   // The starting and ending tags to sspan.
   *parameters.startingTagPtr = 0;
   *parameters.endingTagPtr = 4;
+
+  // Default to manual mode.
+  parameters.automaticModePtr = false;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Set up for loop entry.
@@ -376,11 +380,20 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
         break;
       } // case
 
+      case 'A':
+      {
+         // Retrieve the automatic mode flag.
+        *parameters.automaticModePtr = atoi(optarg);
+        break;
+      } // case
+
       case 'h':
       {
         // Display usage.
         fprintf(stderr,"./systemCoordinator -L <startingIfGain "
-                       "-U <endingifGain -S <startingTag> -E <endingTag>\n");
+                       "-U <endingifGain\n"
+                       "                    -S <startingTag> -E <endingTag>\n"
+                       "                    -A automaticMode\n");
 
         // Indicate that program must be exited.
         exitProgram = true;
@@ -417,6 +430,7 @@ int main(int argc,char **argv)
   int tag;
   int startingTag;
   int endingTag;
+  bool automaticMode;
 
   struct MyParameters parameters;
   char inputBuffer[256];
@@ -430,6 +444,7 @@ int main(int argc,char **argv)
   parameters.endingIfGainPtr = &endingIfGain;
   parameters.startingTagPtr = &startingTag;
   parameters.endingTagPtr = &endingTag;
+  parameters.automaticModePtr = &automaticMode;
 
   // Retrieve the system parameters.
   exitProgram = getUserArguments(argc,argv,parameters);
