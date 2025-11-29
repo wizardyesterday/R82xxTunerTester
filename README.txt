@@ -7,7 +7,7 @@ generating a set of 128 different discrete frequencies, but its VCO really
 doesn't lock on all of these frequencies. On the radios that I have, 57.6MHz
 seems to work reliably.
 I decided to use the ring oscillator as aninternal signal source which drives
-the mixer stage of the tuner. By settting the mixer gain at its maximum
+the mixer stage of the tuner. By setting the mixer gain at its maximum
 value, reliable/repeatable measurements could be made.
 
 1.0 Software Architecture
