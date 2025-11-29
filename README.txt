@@ -53,8 +53,43 @@ times, and after the loop exits, the radio server and spectrum server will
 be told to terminate execution, and the coordinator will also terminate
 execution.
 
-2.0 Building the application
-To build this application, type 'sh buildSystem.sh'.
-To remove executable files, type 'sh clean.sh'.
+2.0 Building and Removing the Application
+To build this application, type 'make servers (comments at the beginning
+of the makefile provide more detail):
 
+Type: make servers
+
+You'll find four applications n the current directory.
+1. radioServer
+2. spectrumServer
+3. coordinator
+4. spectrumProcessor.
+
+To remove executable files, type 'make clean'.
+
+2.1 Running the Program
+The first thing you need to do is start up my RtlSdrDiags on the computer
+for which the rtl-sdr radio dongle is  connected to. localhost will work
+just fine.
+
+Next, type:./spectrumServer -B <bandwidthInHz> <fileName>
+
+Next, type: ./radioServer -a <server IP Address> -p <server port> 
+
+Finally, type: ./coorsinator -L <start IF gain> -U <end IF gain>
+               -S <start tag number> -E <end tag number>
+               -A (automatic mode, optional).
+
+3. Summary
+This program saved me lots of time when characterizing an rtl-sdr radio.
+When performing thests using the command line, it took about 2 hours to
+perform 256 measurements. When running this program in automatic mode,
+the same set of measurements took 1 minute and 37 seconds.
+I hope that this multi-program provides a usable example of writing
+software that uses Unix System V message queues.
+
+IRC Nick: wizardyesterday
+#IRC Channels: ##rtlasr, ##trustnoone
+
+As always, kind regards!
 
