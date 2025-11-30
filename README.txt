@@ -55,9 +55,9 @@ execution.
 
 2.0 Building and Removing the Application
 To build this application, type 'make servers (comments at the beginning
-of the makefile provide more detail):
-
-Type: make servers
+of the makefile provide more detai:
+To make a build that has symbols in the executable so that source level
+debugging can be performed, our example becomes 'make DEBUG=1 servers'.
 
 You'll find four applications n the current directory.
 1. radioServer

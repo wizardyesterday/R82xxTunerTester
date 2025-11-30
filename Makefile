@@ -18,7 +18,7 @@
 #
 # NOTE: To build a target that includes symbols an example is listed
 # elow:
-#         make DEBUtrue=true radioServer
+#         make DEBUtrue=1 radioServer
 # You can perform source code debugging with a debugger such as gdb.
 #************************************************************************
 
@@ -28,7 +28,7 @@
 CPP = g++
 CFLAGS = -I include
 
-ifeq ($(DEBUG),true)
+ifdef DEBUG
   CFLAGS += -O0 -g
 else
   CFLAGS += -O2
