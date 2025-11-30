@@ -22,6 +22,11 @@
 #/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 CPP = g++
 CFLAGS = -O0 -g -I include
+
+INCLUDES = include/R82xxTunerTester.h include/IpcMessageQueue.h \
+	include/TcpClient.h include/SpectrumProcessor.h \
+	include/TcpClient.h
+
 #/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 # End of Generic defines.
 #/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -76,22 +81,22 @@ servers: coordinator radioServer spectrumServer spectrumProcessor
 clients: radioClient spectrumClient
 
 
-coordinator: $(COORDINATORFILES)
+coordinator: $(COORDINATORFILES) $(INCLUDES)
 	$(CPP) $(CFLAGS) -o $(COORDINATORTARGET) $(COORDINATORFILES)
 
-radioServer: $(RSERVERFILES)
+radioServer: $(RSERVERFILES) $(INCLUDES)
 	$(CPP) $(CFLAGS) -o $(RSERVERTARGET) $(RSERVERFILES)
 
-spectrumServer: $(SSERVERFILES)
+spectrumServer: $(SSERVERFILES) $(INCLUDES)
 	$(CPP) $(CFLAGS) -o $(SSERVERTARGET) $(SSERVERFILES)
 
-spectrumProcessor: $(SPROCESSORFILES)
+spectrumProcessor: $(SPROCESSORFILES) $(INCLUDES)
 	$(CPP) $(CFLAGS) -o $(SPROCESSORTARGET) $(SPROCESSORFILES) -l fftw3
 
-radioClient: $(RCLIENTFILES)
+radioClient: $(RCLIENTFILES) $(INCLUDES)
 	$(CPP) $(CFLAGS) -o $(RCLIENTTARGET) $(RCLIENTFILES)
 
-spectrumClient: $(SCLIentfILES)
+spectrumClient: $(SCLIentfILES) $(INCLUDES)
 	$(CPP) $(CFLAGS) -o $(SCLIENTTARGET) $(SCLIENTFILES)
 
 clean:
