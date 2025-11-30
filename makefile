@@ -76,22 +76,22 @@ servers: coordinator radioServer spectrumServer spectrumProcessor
 clients: radioClient spectrumClient
 
 
-coordinator:
+coordinator: $(COORDINATORFILES)
 	$(CPP) $(CFLAGS) -o $(COORDINATORTARGET) $(COORDINATORFILES)
 
-radioServer:
+radioServer: $(RSERVERFILES)
 	$(CPP) $(CFLAGS) -o $(RSERVERTARGET) $(RSERVERFILES)
 
-spectrumServer:
+spectrumServer: $(SSERVERFILES)
 	$(CPP) $(CFLAGS) -o $(SSERVERTARGET) $(SSERVERFILES)
 
-spectrumProcessor:
+spectrumProcessor: $(SPROCESSORFILES)
 	$(CPP) $(CFLAGS) -o $(SPROCESSORTARGET) $(SPROCESSORFILES) -l fftw3
 
-radioClient:
+radioClient: $(RCLIENTFILES)
 	$(CPP) $(CFLAGS) -o $(RCLIENTTARGET) $(RCLIENTFILES)
 
-spectrumClient:
+spectrumClient: $(SCLIentfILES)
 	$(CPP) $(CFLAGS) -o $(SCLIENTTARGET) $(SCLIENTFILES)
 
 clean:
