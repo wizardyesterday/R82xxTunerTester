@@ -15,13 +15,24 @@
 #
 # 3. make all. All programs are built for which 'clients' and 'servers'
 #    builds.
+#
+# NOTE: To build a target that includes symbols an example is listed
+# elow:
+#         make DEBUtrue=true radioServer
+# You can perform source code debugging with a debugger such as gdb.
 #************************************************************************
 
 #/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 # Generic defines.
 #/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 CPP = g++
-CFLAGS = -O0 -g -I include
+CFLAGS = -I include
+
+ifeq ($(DEBUG),true)
+  CFLAGS += -O0 -g
+else
+  CFLAGS += -O2
+endif
 
 INCLUDES = include/R82xxTunerTester.h include/IpcMessageQueue.h \
 	include/TcpClient.h include/SpectrumProcessor.h \
