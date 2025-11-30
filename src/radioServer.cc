@@ -15,12 +15,14 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 #define DEFAULT_SERVER_IP_ADDRESS "192.93.16.87"
 #define DEFAULT_SERVER_PORT (8001)
+#define DEFAULT_FREQUENCY (57600000)
 
 // This structure is used to consolidate user parameters.
 struct MyParameters
 {
   char *serverIpAddressPtr;
   int *serverPortPtr;
+  float *frequencyInHzPtr;
 };
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -274,6 +276,9 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
  
   // The server listener port.
   *parameters.serverPortPtr = DEFAULT_SERVER_PORT;
+
+  // The default radio frequency.
+  *parameters.frequencyInHzPtr = DEFAULT_FREQUENCY; 
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Set up for loop entry.
@@ -285,7 +290,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   while (!done)
   {
     // Retrieve the next option.
-    opt = getopt(argc,argv,"a:p:m:h");
+    opt = getopt(argc,argv,"a:p:f:h");
 
     switch (opt)
     {
@@ -303,11 +308,25 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
         break;
       } // case
 
+      case 'f':
+      {
+        // Retrieve the frequency.
+        *parameters.frequencyInHzPtr = atof(optarg);
+
+        if (*parameters.frequencyInHzPtr <= 0)
+        
+          // Keep it sane.
+          {
+          *parameters.frequencyInHzPtr = DEFAULT_FREQUENCY; 
+        } // if 
+        break;
+      } // case
+
       case 'h':
       {
         // Display usage.
         fprintf(stderr,"./radioserver -a <serverIpAddress: x.x.x.x> "
-                "-p <serverPort>\n");
+                "-p <serverPort> -f <frequencyInHz>\n");
 
         // Indicate that program must be exited.
         exitProgram = true;
@@ -338,8 +357,10 @@ int main(int argc,char **argv)
   bool success;
   bool done;
   bool exitProgram;
+  float frequencyInHz;
   struct MyParameters parameters;
   char *chPtr;
+  char commandBuffer[100];
 
   // Message queue support.
   IpcMessageQueue *queuePtr;
@@ -356,6 +377,7 @@ int main(int argc,char **argv)
   // Set up for parameter transmission.
   parameters.serverPortPtr = &serverPort;
   parameters.serverIpAddressPtr = serverIpAddress;
+  parameters.frequencyInHzPtr = &frequencyInHz;
 
   // Retrieve the system parameters.
   exitProgram = getUserArguments(argc,argv,parameters);
@@ -392,7 +414,11 @@ int main(int argc,char **argv)
   sendRadioCommand("set rxgain 50\n",0);
   sendRadioCommand("start receiver\n",3000);
   sendRadioCommand("start ringoscillator 8 48 0\n",0);
-  sendRadioCommand("set rxfrequency 57600000\n",0);
+
+  snprintf(commandBuffer,sizeof(commandBuffer),
+           "set rxfrequency %.0f\n",frequencyInHz); 
+
+  sendRadioCommand(commandBuffer,0);
 
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Radio is set up for testing, so now message queue sruff

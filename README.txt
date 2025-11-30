@@ -74,11 +74,14 @@ just fine.
 
 Next, type:./spectrumServer -B <bandwidthInHz> <fileName>
 
-Next, type: ./radioServer -a <server IP Address> -p <server port> 
+Next, type: ./radioServer -a <server IP Address> -p <server port>
+             -f <frequencyInHz, optional>
 
 Finally, type: ./coorsinator -L <start IF gain> -U <end IF gain>
                -S <start tag number> -E <end tag number>
                -A (automatic mode, optional).
+
+For more details, run each program using the -h flag.
 
 3. Summary
 This program saved me lots of time when characterizing an rtl-sdr radio.
