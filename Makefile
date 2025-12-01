@@ -17,8 +17,8 @@
 #    builds.
 #
 # NOTE: To build a target that includes symbols an example is listed
-# elow:
-#         make DEBUtrue=1 radioServer
+# below:
+#         make DEBUG=1 radioServer
 # You can perform source code debugging with a debugger such as gdb.
 #************************************************************************
 
@@ -107,7 +107,7 @@ spectrumProcessor: $(SPROCESSORFILES) $(INCLUDES)
 radioClient: $(RCLIENTFILES) $(INCLUDES)
 	$(CPP) $(CFLAGS) -o $(RCLIENTTARGET) $(RCLIENTFILES)
 
-spectrumClient: $(SCLIentfILES) $(INCLUDES)
+spectrumClient: $(SCLIENTFILES) $(INCLUDES)
 	$(CPP) $(CFLAGS) -o $(SCLIENTTARGET) $(SCLIENTFILES)
 
 clean:
